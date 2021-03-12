@@ -15,6 +15,6 @@ process collect_fastq {
             find -L \${barcodes} -name '*.fastq' -exec cat {} + | gzip > \${barcodes##*/}.fastq.gz
             find -L \${barcodes} -name '*.fastq.gz' -exec zcat {} + | gzip >> \${barcodes##*/}.fastq.gz
         done
-        ## find . -name "*.fastq.gz" -type 'f' -size -1500k -delete
+        find . -name "*.fastq.gz" -type 'f' -size -1500k -delete
         """
 }

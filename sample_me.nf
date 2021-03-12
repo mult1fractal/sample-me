@@ -138,6 +138,7 @@ include { emit_fastq_wf } from './workflows/emit_fastq.nf'
 
 workflow {
 
+        //demultiplex if params readuntil (fastq_dir_ch)
         // fastq input via dir and or files
         //if ( (params.fastq || params.fastq_pass) || workflow.profile.contains('test_fastq')) { 
             if (params.fastq_pass && !params.fastq) { fastq_input_raw_ch = collect_fastq_wf(fastq_dir_ch) }
@@ -148,6 +149,7 @@ workflow {
                 else if (!params.samples) { fastq_input_ch = fastq_input_raw_ch }
                 
             emit_fastq_wf(fastq_input_ch)
+            
             // read_qc_wf(fastq_input_ch)
             // read_classification_wf(fastq_input_ch)
            }   // fasta_input_ch = artic_ncov_wf(fastq_input_ch)[0]
