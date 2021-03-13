@@ -1,10 +1,13 @@
 include { collect_fastq } from './process/collect_fastq'
+include { demultiplex } from './process/demultiplex'
 
 workflow collect_fastq_wf {
     take: 
         fastq_dir  
     main:
-        collect_fastq(fastq_dir)
+        if ( params.demultiplex ) { collect_fastq(demultiplex(fastq_dir)) }
+        else collect_fastq(fastq_dir)
+       // collect_fastq(demultiplexed_fastq_dir.out)
 
         if (params.single) { fastq_channel = collect_fastq.out }
         else { fastq_channel = collect_fastq.out

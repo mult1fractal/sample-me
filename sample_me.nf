@@ -119,18 +119,9 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
 * Workflows
 **************************/
 
-// include { artic_ncov_wf } from './workflows/artic_nanopore_nCov19.nf'
-// include { basecalling_wf } from './workflows/basecalling.nf'
 include { collect_fastq_wf } from './workflows/collect_fastq.nf'
 include { emit_fastq_wf } from './workflows/emit_fastq.nf'
-// include { create_json_entries_wf } from './workflows/create_json_entries.nf'
-// include { create_summary_report_wf } from './workflows/create_summary_report.nf'
-// include { determine_lineage_wf } from './workflows/determine_lineage.nf'
-// include { determine_mutations_wf } from './workflows/determine_mutations.nf'
-// include { genome_quality_wf } from './workflows/genome_quality.nf'
-// include { read_classification_wf } from './workflows/read_classification'
-// include { read_qc_wf } from './workflows/read_qc.nf'
-// include { rki_report_wf } from './workflows/provide_rki.nf'
+
 
 /************************** 
 * MAIN WORKFLOW
@@ -166,139 +157,6 @@ def helpMSG() {
     log.info """
     ____________________________________________________________________________________________
     
-    ${c_green}poreCov${c_reset} | A Nextflow SARS-CoV-2 (nCov19) workflow for nanopore data
-    
-    ${c_yellow}Usage examples:${c_reset}
-    nextflow run replikation/poreCov --fastq 'sample_01.fasta.gz' --cores 14 -profile local,singularity
-
-    ${c_yellow}Inputs (choose one):${c_reset}
-    --fast5           one fast5 dir of a nanopore run containing multiple samples (barcoded);
-                    to skip demultiplexing (no barcodes) add the flag [--single]
-                    ${c_dim}[Basecalling + Genome reconstruction + Lineage + Reports]${c_reset}
-
-    --fastq         one fastq or fastq.gz file per sample or
-                    multiple file-samples: --fastq 'sample_*.fasta.gz'
-                    ${c_dim}[Genome reconstruction + Lineage + Reports]${c_reset}
-
-    --fastq_pass    the fastq_pass dir from the (guppy) bascalling
-                    --fastq_pass 'fastq_pass/'
-                    to skip demultiplexing (no barcodes) add the flag [--single]
-                    ${c_dim}[Genome reconstruction + Lineage + Reports]${c_reset}
-
-    --fasta         direct input of genomes - supports multi-fasta file(s)
-                    ${c_dim}[Lineage + Reports]${c_reset}
-
-    ${c_yellow}Workflow control ${c_reset}
-    --rki           activates RKI style summary for DESH upload
-    --samples       .csv input (header: Status,_id), renames barcodes (Status) by name (_id), e.g.:
-                    Status,_id,
-                    barcode01,sample2011XY
-                    BC02,thirdsample_run
-    --extended      poreCov utilizes from --samples these additional headers:
-                    Submitting_Lab,Isolation_Date,Seq_Reason,Sample_Type
-
-    ${c_yellow}Parameters - Basecalling${c_reset}
-    --localguppy    use a native installation of guppy instead of a gpu-docker or gpu_singularity 
-    --guppy_cpu     use cpus instead of gpus for basecalling
-    --one_end       removes the recommended "--require_barcodes_both_ends" from guppy demultiplexing
-                    try this if to many barcodes are unclassified (beware - results might not be trustworthy)
-
-    ${c_yellow}Parameters - nCov genome reconstruction${c_reset}
-    --primerV       artic-ncov2019 primer_schemes [default: ${params.primerV}]
-                        Supported: V1, V2, V3, V1200
-    --minLength     min length filter raw reads [default: ${params.minLength}]
-    --maxLength     max length filter raw reads [default: ${params.maxLength}]
-    --medaka_model  medaka model for the artic workflow [default: ${params.medaka_model}]
-    --guppy_model   guppy basecalling modell [default: ${params.guppy_model}]
-
-    ${c_yellow}Parameters - Genome quality control${c_reset}
-    --reference_for_qc      reference FASTA for consensus qc (optional, wuhan is provided by default)
-    --seq_threshold         global pairwise ACGT sequence identity threshold [default: ${params.seq_threshold}] 
-    --n_threshold           consensus sequence N threshold [default: ${params.n_threshold}] 
-
-    ${c_yellow}Options:${c_reset}
-    --cores         amount of cores for a process (local use) [default: $params.cores]
-    --max_cores     max amount of cores for poreCov to use (local use) [default: $params.max_cores]
-    --memory        available memory [default: $params.memory]
-    --output        name of the result folder [default: $params.output]
-    --cachedir      defines the path where singularity images are cached
-                    [default: $params.cachedir]
-    --krakendb      provide a .tar.gz kraken database [default: auto downloads one]
-
-    ${c_yellow}Execution/Engine profiles:${c_reset}
-    poreCov supports profiles to run via different ${c_green}Executers${c_reset} and ${c_blue}Engines${c_reset} 
-    examples:
-     -profile ${c_green}local${c_reset},${c_blue}docker${c_reset}
-     -profile ${c_yellow}test_fastq${c_reset},${c_green}slurm${c_reset},${c_blue}singularity${c_reset}
-
-      ${c_green}Executer${c_reset} (choose one):
-       local
-       slurm
-      ${c_blue}Engines${c_reset} (choose one):
-       docker
-       singularity
-      ${c_yellow}Input test data${c_reset} (choose one):
-       test_fasta
-       test_fastq
-       test_fast5
-    """.stripIndent()
-}
-
-def defaultMSG(){
-    log.info """
-    SARS-CoV-2 - Workflow
-
-    \u001B[32mProfile:             $workflow.profile\033[0m
-    \033[2mCurrent User:        $workflow.userName
-    Nextflow-version:    $nextflow.version
-    \u001B[0m
-    Pathing:
-    \033[2mWorkdir location [-work-Dir]:
-        $workflow.workDir
-    Output dir [--output]: 
-        $params.output
-    Databases location [--databases]:
-        $params.databases
-    Singularity cache dir [--cachedir]: 
-        $params.cachedir
-    \u001B[1;30m______________________________________\033[0m
-    Parameters:
-    \033[2mPrimerscheme:        $params.primerV [--primerV]
-    Medaka model:        $params.medaka_model [--medaka_model]
-    CPUs to use:         $params.cores [--cores]
-    Memory in GB:        $params.memory [--memory]\u001B[0m
-
-    \u001B[1;30m______________________________________\033[0m
-    """.stripIndent()
-}
-
-def v1200_MSG() {
-    log.info """
-    1200 bp amplicon scheme is used [--primerV V1200]
-    \033[2m  --minLength set to 500bp
-      --maxLength set to 1500bp\u001B[0m
-    \u001B[1;30m______________________________________\033[0m
-    """.stripIndent()
-}
-
-def basecalling() {
-    log.info """
-    Basecalling options:
-    \033[2mUsing local guppy?      $params.localguppy [--localguppy]  
-    One end demultiplexing? $params.one_end [--one_end]
-    CPUs for basecalling?   $params.guppy_cpu [--guppy_cpu]
-    Basecalling modell:     $params.guppy_model [--guppy_model]\u001B[0m
-    \u001B[1;30m______________________________________\033[0m
-    """.stripIndent()
-}
-
-def rki() {
-    log.info """
-    RKI output activated:
-    \033[2mOutput stored at:    $params.output/$params.rkidir  
-    Min Identity to NC_045512.2: $params.seq_threshold [--seq_threshold]
-    Min Coverage:        20 [ no parameter]
-    Proportion cutoff N: $params.n_threshold [--n_threshold]\u001B[0m
-    \u001B[1;30m______________________________________\033[0m
+nextflow run sample_me.nf --samples test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv --fastq_pass test_data/sequencing_output/fastq_pass/ --demultiplex -profile local,docker -work-dir work/ --cores 10 --output results/demultiplex_test
     """.stripIndent()
 }
