@@ -1,5 +1,6 @@
 process collect_fastq {
         label 'ubuntu'
+        publishDir "${params.output}/${name}/", mode: 'copy', pattern: "*.fastq.gz"
     input:
         tuple val(name), path(dir)
     output:

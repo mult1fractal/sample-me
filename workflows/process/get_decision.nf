@@ -7,7 +7,7 @@ process get_decision {
         tuple val(name), path("*_${name}_read_id.txt")
     script:
         """
-        ## get decisions of read until file
+        ## get all decisions of read until file
         cat ${read_until} | tail -n+2 | cut -d"," -f8 | sort -u > decision_list.txt
 
         ##  create read- id list per decision
