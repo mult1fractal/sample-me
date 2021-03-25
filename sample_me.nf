@@ -144,6 +144,7 @@ include { read_qc_wf } from './workflows/read_qc'
 
 workflow {
 
+        //demultiplex if params readuntil (fastq_dir_ch)
         // fastq input via dir and or files
         //if ( (params.fastq || params.fastq_pass) || workflow.profile.contains('test_fastq')) { 
             if (params.fastq_pass && !params.fastq) { fastq_input_raw_ch = collect_fastq_wf(fastq_dir_ch) }
