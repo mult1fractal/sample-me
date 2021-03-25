@@ -14,6 +14,8 @@ workflow collect_fastq_wf {
                             .map { it -> it[1] }
                             .flatten()
                             .map { it -> [ it.simpleName, it ] }
+        //emit_fastq(fastq_channel)
+        
         }
 
     emit: fastq_channel

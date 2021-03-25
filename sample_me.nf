@@ -99,6 +99,12 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
         .map { file -> tuple(file.simpleName, file) }
         .view()
     }
+
+    if (params.fastq) { fastq_file_ch = Channel
+        .fromPath( params.fastq, checkIfExists: true)
+        .map { file -> tuple(file.simpleName, file) }
+        .view()
+    }
     // extended input
     // if (params.samples && params.extended) { 
     //     extended_input_ch = Channel.fromPath( params.samples, checkIfExists: true)
@@ -126,8 +132,10 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
 **************************/
 
 include { collect_fastq_wf } from './workflows/collect_fastq.nf'
-include { emit_fastq_wf } from './workflows/emit_fastq.nf'
 include { adaptive_sampling_wf } from './workflows/adaptive_sampling'
+include { read_qc_wf } from './workflows/read_qc'
+
+
 
 
 /************************** 
@@ -146,10 +154,11 @@ workflow {
                 else if (!params.samples) { fastq_input_ch = fastq_input_raw_ch }
             
             //  safe renamed.fastq.gz    
-            emit_fastq_wf(fastq_input_ch)
+            //emit_fastq_wf(fastq_input_ch)
 
             // adaptive sampling analysis
-            if (params.read_until) { adaptive_sampling_wf(emit_fastq_wf.out, read_until_input_ch) }
+            if ( params.read_until ) { adaptive_sampling_wf(fastq_input_ch, read_until_input_ch) }
+            if ( params.fastq && params.read_qc) { read_qc_wf(fastq_input_ch) }
             // read_qc_wf(fastq_input_ch)
             // read_classification_wf(fastq_input_ch)
            }   // fasta_input_ch = artic_ncov_wf(fastq_input_ch)[0]
@@ -171,5 +180,9 @@ def helpMSG() {
 nextflow run sample_me.nf --samples test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv --fastq_pass test_data/sequencing_output/fastq_pass/ --demultiplex -profile local,docker -work-dir work/ --cores 10 --output results/demultiplex_test
     
 nextflow run sample_me.nf --samples test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv --fastq_pass test_data/sequencing_output/fastq_pass/ --demultiplex --read_until test_data/sequencing_output/read_until_FAP76673_e0481cad.csv -profile local,docker -work-dir work/ --cores 10 --output results/adaptive_sempling_decisions    
+    
+## for nanoplot
+nextflow run sample_me.nf --fastq 'results/11*/*fastq.gz' --read_qc -profile local,docker -work-dir work/ --cores 10 --output results/nanoplot    
+    
     """.stripIndent()
 }

@@ -5,9 +5,7 @@ workflow adaptive_sampling_wf {
     take:   fastq_gz
             read_until 
 
-    main:   separated_fastqs = create_decision_fastqs(fastq_gz, get_decision(read_until))
-
-        
+    main:   separated_fastqs = create_decision_fastqs(fastq_gz, get_decision(read_until)).view()
 
     emit: separated_fastqs
 } 
