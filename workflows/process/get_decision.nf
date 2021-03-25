@@ -15,5 +15,4 @@ process get_decision {
             grep -w "\$line" ${read_until} | cut -d"," -f6 > "\$line"_${name}_read_id.txt 
             done < decision_list.txt
         """
-
 }
