@@ -1,5 +1,5 @@
 process demultiplex {
-
+    label 'guppy_demultiplex'
         if (workflow.profile.contains('docker')) {
             container = 'nanozoo/guppy_gpu:4.4.1-1--a3fcea3'
         }

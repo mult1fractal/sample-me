@@ -61,10 +61,10 @@ exit 1
 
 // params help
 if (!workflow.profile.contains('test_fastq') && !workflow.profile.contains('test_fast5') && !workflow.profile.contains('test_fasta')) {
-    if (!params.fasta &&  !params.fast5 &&  !params.fastq &&  !params.fastq_pass ) {
-        exit 1, "input missing, use [--fasta] [--fastq] [--fastq_pass] or [--fast5]"}
-    if ((params.fasta && ( params.fastq || params.fast5 )) || ( params.fastq && params.fast5 )) {
-        exit 1, "To many inputs: please us either: [--fasta], [--fastq] or [--dir]"} 
+    // if (!params.fasta &&  !params.fast5 &&  !params.fastq &&  !params.fastq_pass ) {
+    //     exit 1, "input missing, use [--fasta] [--fastq] [--fastq_pass] or [--fast5]"}
+    // if ((params.fasta && ( params.fastq || params.fast5 )) || ( params.fastq && params.fast5 )) {
+    //     exit 1, "To many inputs: please us either: [--fasta], [--fastq] or [--dir]"} 
 if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profile.contains('local')) {
         exit 1, "More cores (--cores $params.cores) specified than available (--max_cores $params.max_cores)" }
 }
@@ -85,6 +85,12 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
         .map { file -> tuple(file.simpleName, file) }
     }
 
+// General fastq input channel
+    if (params.fastq) { fastq_file_ch = Channel
+        .fromPath( params.fastq, checkIfExists: true)
+        .map { file -> tuple(file.simpleName, file) }
+        .view()
+    }
 
 // samples input 
     if (params.samples) { samples_input_ch = Channel
@@ -93,18 +99,20 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
         .map { row -> tuple ("barcode${row.barcode[-2..-1]}", "${row._id}")}
         .view()
     }
-
+// read until file input
     if (params.read_until) { read_until_input_ch = Channel
         .fromPath( params.read_until, checkIfExists: true)
         .map { file -> tuple(file.simpleName, file) }
         .view()
     }
 
-    if (params.fastq) { fastq_file_ch = Channel
-        .fromPath( params.fastq, checkIfExists: true)
+// sequencing summary file input
+    if (params.seq_summary) { sequencing_summary_input_channel = Channel
+        .fromPath( params.seq_summary, checkIfExists: true)
         .map { file -> tuple(file.simpleName, file) }
         .view()
     }
+
     // extended input
     // if (params.samples && params.extended) { 
     //     extended_input_ch = Channel.fromPath( params.samples, checkIfExists: true)
@@ -114,7 +122,7 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
     //                 row.'Seq_Reason' + ',' + row.'Sample_Type' + '\n']
     //                 }
     // }
-    else { extended_input_ch = Channel.from( ['deactivated', 'deactivated'] ) }
+    // else { extended_input_ch = Channel.from( ['deactivated', 'deactivated'] ) }
 
 
 /************************** 
@@ -134,6 +142,7 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
 include { collect_fastq_wf } from './workflows/collect_fastq.nf'
 include { adaptive_sampling_wf } from './workflows/adaptive_sampling'
 include { read_qc_wf } from './workflows/read_qc'
+include { sequencing_summary_wf } from './workflows/sequencing_summary'
 
 
 
@@ -152,7 +161,7 @@ workflow {
 
             // raname barcodes based on --samples input.csv
                 if (params.samples) { fastq_input_ch = fastq_input_raw_ch.join(samples_input_ch).map { it -> tuple(it[2],it[1])}.view() }
-                else if (!params.samples) { fastq_input_ch = fastq_input_raw_ch }
+                else if (!params.samples && !params.seq_summary) { fastq_input_ch = fastq_input_raw_ch }
             
             //  safe renamed.fastq.gz    
             //emit_fastq_wf(fastq_input_ch)
@@ -160,7 +169,7 @@ workflow {
             // adaptive sampling analysis
             if ( params.read_until ) { adaptive_sampling_wf(fastq_input_ch, read_until_input_ch) }
             if ( params.fastq && params.read_qc) { read_qc_wf(fastq_input_ch) }
-            // read_qc_wf(fastq_input_ch)
+            if ( params.seq_summary ) {sequencing_summary_wf(sequencing_summary_input_channel)}
             // read_classification_wf(fastq_input_ch)
            }   // fasta_input_ch = artic_ncov_wf(fastq_input_ch)[0]
         

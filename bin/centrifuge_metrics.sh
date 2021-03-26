@@ -27,6 +27,8 @@ done
 sed -i '1s/.*/samplename|human_classified|human_classified_reads|bacteria_classified|bacteria_classified_reads\n&/' pavian_metrics.csv
 sed -i '1s/.*/samplename|class_total|phyla_total|genus_total|species_total\n&/' taxa_metrics.csv
 
+
+
 for i in 1.Read_quality/*/*_read_quality.txt ; do
     samplename=$(basename $i)
     Read_length_N50=$(grep -w "Read length N50" $i | cut -d ":" -f2 )
