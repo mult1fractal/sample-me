@@ -12,7 +12,18 @@ process get_decision {
 
         ##  create read- id list per decision
         while read line; do  
-            grep -w "\$line" ${read_until} | cut -d"," -f6 > "\$line"_${name}_read_id.txt 
+            grep -w "\$line" ${read_until} | cut -d"," -f6 | sort -u > "\$line"_${name}_read_id.txt 
             done < decision_list.txt
+
+        ## remove dupes from no decision that are in unblock 
+        grep -Fvxf unblock*_read_id.txt no_decision*_read_id.txt > minus-deplete.csv
+        ## remove dupes from no decision that are in stop_receiving
+        grep -Fvxf stop_*_read_id.txt minus-deplete.csv > no_decision_${name}_read_id.txt
         """
 }
+
+
+
+// read1 no <<<
+// read1 no <<<< no read
+// read1 unbl  unblock read

@@ -11,8 +11,10 @@ for i in *_pavian_report_filtered.csv ; do
     ## bacteria metrics
     bacteria_classified=$(grep -w "D" $i | grep -w "Bacteria" | cut -f1 | tr -d " ")
     bacteria_classified_reads=$(grep -w "D" $i | grep -w "Bacteria" | cut -f2 )
+    ## root bacteria reads
+    root_classified=$(grep -w "root" $i | cut -f2 )
 ## root bacteria reads        
-    echo "$samplename|$human_classified|$human_classified_reads|$bacteria_classified|$bacteria_classified_reads " >> pavian_metrics.csv
+    echo "$samplename|$root_classified|$human_classified|$human_classified_reads|$bacteria_classified|$bacteria_classified_reads " >> pavian_metrics.csv
     ## taxa amount
     amount_of_taxa_class=$(grep -w "C" $i | wc -l )
     amount_of_taxa_phyla=$(grep -w "P" $i | wc -l )
@@ -21,10 +23,10 @@ for i in *_pavian_report_filtered.csv ; do
 
         
     echo "$samplename|$amount_of_taxa_class|$amount_of_taxa_phyla|$amount_of_taxa_genus|$amount_of_taxa_sepcies" >> taxa_metrics.csv
-## root bacteria reads
+
 done
 
-sed -i '1s/.*/samplename|human_classified|human_classified_reads|bacteria_classified|bacteria_classified_reads\n&/' pavian_metrics.csv
+sed -i '1s/.*/samplename|overall_reads_classified|human_classified|human_classified_reads|bacteria_classified|bacteria_classified_reads\n&/' pavian_metrics.csv
 sed -i '1s/.*/samplename|class_total|phyla_total|genus_total|species_total\n&/' taxa_metrics.csv
 
 
