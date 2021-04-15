@@ -7,6 +7,7 @@ process seqkit {
         tuple val(name), path("${name}_filtered.fastq.gz") 
     script:
         """
-        seqkit seq -m ${params.filter} ${fastq} > ${name}_filtered.fastq.gz
+        seqkit seq -m ${params.filter} ${fastq} > ${name}_filtered.fastq
+        gzip ${name}_filtered.fastq
         """
 }

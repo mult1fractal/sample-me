@@ -89,7 +89,6 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
     if (params.fastq) { fastq_file_ch = Channel
         .fromPath( params.fastq, checkIfExists: true)
         .map { file -> tuple(file.simpleName, file) }
-        .view()
     }
 
 // samples input 
@@ -97,20 +96,17 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
         .fromPath( params.samples, checkIfExists: true)
         .splitCsv(header: true, sep: ',')
         .map { row -> tuple ("barcode${row.barcode[-2..-1]}", "${row._id}")}
-        .view()
     }
 // read until file input
     if (params.read_until) { read_until_input_ch = Channel
         .fromPath( params.read_until, checkIfExists: true)
         .map { file -> tuple(file.simpleName, file) }
-        .view()
     }
 
 // sequencing summary file input
     if (params.seq_summary) { sequencing_summary_input_channel = Channel
         .fromPath( params.seq_summary, checkIfExists: true)
         .map { file -> tuple(file.simpleName, file) }
-        .view()
     }
 
     // extended input
@@ -192,7 +188,45 @@ nextflow run sample_me.nf --samples test_data/sequencing_output/115_VT0_deep_seq
 nextflow run sample_me.nf --samples test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv --fastq_pass test_data/sequencing_output/fastq_pass/ --demultiplex --read_until test_data/sequencing_output/read_until_FAP76673_e0481cad.csv -profile local,docker -work-dir work/ --cores 10 --output results/adaptive_sempling_decisions    
     
 ## for nanoplot
-nextflow run sample_me.nf --fastq 'results/11*/*fastq.gz' --read_qc -profile local,docker -work-dir work/ --cores 10 --output results/nanoplot    
+nextflow run sample_me.nf --fastq 'results/11*/*fastq.gz' --read_qc -profile local,docker -work-dir work/ --cores 10 --output results/nanoplot
+
+
+nextflow run sample_me.nf --demultiplex \
+--sample /mnt/nano-server/GRIDION_DISK/115_VT0_deep_seq_ad-sam_deplete/115_VT0_deep_seq_ad-sam_deplete/115_VT0_deep_seq_ad-sam_barcode_overview.csv \
+--fastq_pass /mnt/nano-server/GRIDION_DISK/115_VT0_deep_seq_ad-sam_deplete/115_VT0_deep_seq_ad-sam_deplete/fastq_pass/ \
+--read_until /mnt/nano-server/GRIDION_DISK/115_VT0_deep_seq_ad-sam_deplete/115_VT0_deep_seq_ad-sam_deplete/read_until_FAP76673_e0481cad.csv \
+-profile local,docker -work-dir work/ --cores 20 \
+--output results/115_VT0_deep_seq_ad-sam_deplete   
+
+nextflow run sample_me.nf --demultiplex \
+--sample /mnt/nano-server/GRIDION_DISK/116_VT2_deep_seq_ad-sam_deplete/116_VT2_deep_seq_ad-sam_deplete/116_VT2_deep_seq_ad-sam_barcode_overview.csv \
+--fastq_pass /mnt/nano-server/GRIDION_DISK/116_VT2_deep_seq_ad-sam_deplete/116_VT2_deep_seq_ad-sam_deplete/fastq_pass/ \
+--read_until /mnt/nano-server/GRIDION_DISK/116_VT2_deep_seq_ad-sam_deplete/116_VT2_deep_seq_ad-sam_deplete/read_until_FAP72996_1670fee8.csv \
+-profile local,docker -work-dir work/ --cores 20 \
+--output results/116_VT2_deep_seq_ad-sam_deplete 
+
+nextflow run sample_me.nf --demultiplex \
+--sample /mnt/nano-server/GRIDION_DISK/115_VT0_deep_seq_ad-sam_enrich/115_VT0_deep_seq_ad-sam_enrich/115_VT0_deep_seq_ad-sam_enrich_barcode_overview.csv \
+--fastq_pass /mnt/nano-server/GRIDION_DISK/115_VT0_deep_seq_ad-sam_enrich/115_VT0_deep_seq_ad-sam_enrich/fastq_pass/ \
+--read_until /mnt/nano-server/GRIDION_DISK/115_VT0_deep_seq_ad-sam_enrich/115_VT0_deep_seq_ad-sam_enrich/read_until_FAP62194_9b996b42.csv \
+-profile local,docker -work-dir work/ --cores 20 \
+--output results/115_VT0_deep_seq_ad-sam_enrich 
+
+nextflow run sample_me.nf --demultiplex \
+--sample /mnt/nano-server/GRIDION_DISK/116_VT2_deep_seq_ad-sam_enrich/116_VT2_deep_seq_ad-sam_enrich/116_VT2_deep_seq_ad-sam_enrich_barcode_overview.csv \
+--fastq_pass /mnt/nano-server/GRIDION_DISK/116_VT2_deep_seq_ad-sam_enrich/116_VT2_deep_seq_ad-sam_enrich/fastq_pass/ \
+--read_until /mnt/nano-server/GRIDION_DISK/116_VT2_deep_seq_ad-sam_enrich/116_VT2_deep_seq_ad-sam_enrich/read_until_FAP73179_495c84e0.csv \
+-profile local,docker -work-dir work/ --cores 20 \
+--output results/116_VT2_deep_seq_ad-sam_enrich 
+
+
+
+nextflow run sample_me.nf --demultiplex \
+--sample test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv \
+--fastq_pass test_data/sequencing_output/fastq_pass/ \
+--read_until test_data/sequencing_output/read_until_FAP76673_e0481cad.csv \
+-profile local,docker -work-dir work/ --cores 20 \
+--output results/test_naming 
     
     """.stripIndent()
 }
