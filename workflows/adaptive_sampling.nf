@@ -9,7 +9,11 @@ workflow adaptive_sampling_wf {
             read_until 
 
     main:   // create a fastq for unblock, no_decision and stop_receiving
-            separated_fastqs = create_decision_fastqs(fastq_gz, get_decision(read_until)).view()
+                // rename fastq_gz before with map
+           // fastq_gz.flatten()
+             //               .view()
+            separated_fastqs = create_decision_fastqs(fastq_gz, get_decision(read_until))
+            
             seqkit(separated_fastqs.map { it -> it[1] }
                             .flatten()
                             .map { it -> [ it.simpleName, it ] })

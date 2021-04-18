@@ -139,6 +139,7 @@ include { collect_fastq_wf } from './workflows/collect_fastq.nf'
 include { adaptive_sampling_wf } from './workflows/adaptive_sampling'
 include { read_qc_wf } from './workflows/read_qc'
 include { sequencing_summary_wf } from './workflows/sequencing_summary'
+include { rename } from './workflows/rename.nf'
 
 
 
@@ -156,12 +157,9 @@ workflow {
             if (!params.fastq_pass && params.fastq) { fastq_input_raw_ch = fastq_file_ch }
 
             // raname barcodes based on --samples input.csv
-                if (params.samples) { fastq_input_ch = fastq_input_raw_ch.join(samples_input_ch).map { it -> tuple(it[2],it[1])}.view() }
+                if (params.samples) { fastq_input_ch = rename(fastq_input_raw_ch.join(samples_input_ch).map { it -> tuple(it[2],it[1])}).view() }
                 else if (!params.samples && !params.seq_summary) { fastq_input_ch = fastq_input_raw_ch }
             
-            //  safe renamed.fastq.gz    
-            //emit_fastq_wf(fastq_input_ch)
-
             // adaptive sampling analysis
             if ( params.read_until ) { adaptive_sampling_wf(fastq_input_ch, read_until_input_ch) }
             if ( params.fastq && params.read_qc) { read_qc_wf(fastq_input_ch) }
@@ -184,8 +182,7 @@ def helpMSG() {
     ____________________________________________________________________________________________
     
 nextflow run sample_me.nf --samples test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv --fastq_pass test_data/sequencing_output/fastq_pass/ --demultiplex -profile local,docker -work-dir work/ --cores 10 --output results/demultiplex_test
-    
-nextflow run sample_me.nf --samples test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv --fastq_pass test_data/sequencing_output/fastq_pass/ --demultiplex --read_until test_data/sequencing_output/read_until_FAP76673_e0481cad.csv -profile local,docker -work-dir work/ --cores 10 --output results/adaptive_sempling_decisions    
+        
     
 ## for nanoplot
 nextflow run sample_me.nf --fastq 'results/11*/*fastq.gz' --read_qc -profile local,docker -work-dir work/ --cores 10 --output results/nanoplot

@@ -11,8 +11,9 @@ process create_decision_fastqs {
         for i in *.txt ; do
             decision=\$(echo "\$i" | cut -d "_" -f1 )
             seqkit grep --pattern-file \$i ${fastq} >> "\$decision"_${name}.fastq
-            gzip "\$decision"_${name}.fastq
+            gzip "\$decision"_${name}.fastq           
         done
+        ##mv ${fastq} ${name}.fastq.gz
         """
 }
 // https://bioinformatics.cvr.ac.uk/essential-awk-commands-for-next-generation-sequence-analysis/
