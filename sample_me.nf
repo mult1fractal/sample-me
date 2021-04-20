@@ -140,6 +140,7 @@ include { adaptive_sampling_wf } from './workflows/adaptive_sampling'
 include { read_qc_wf } from './workflows/read_qc'
 include { sequencing_summary_wf } from './workflows/sequencing_summary'
 include { rename } from './workflows/rename.nf'
+include { stats_wf } from './workflows/stats'
 
 
 
@@ -158,12 +159,13 @@ workflow {
 
             // raname barcodes based on --samples input.csv
                 if (params.samples) { fastq_input_ch = rename(fastq_input_raw_ch.join(samples_input_ch).map { it -> tuple(it[2],it[1])}).view() }
-                else if (!params.samples && !params.seq_summary) { fastq_input_ch = fastq_input_raw_ch }
+                else if (!params.samples ) { fastq_input_ch = fastq_input_raw_ch }
             
             // adaptive sampling analysis
             if ( params.read_until ) { adaptive_sampling_wf(fastq_input_ch, read_until_input_ch) }
             if ( params.fastq && params.read_qc) { read_qc_wf(fastq_input_ch) }
             if ( params.seq_summary ) {sequencing_summary_wf(sequencing_summary_input_channel)}
+            if ( params.stats ) { stats_wf(fastq_input_ch) }
             // read_classification_wf(fastq_input_ch)
            }   // fasta_input_ch = artic_ncov_wf(fastq_input_ch)[0]
         

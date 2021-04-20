@@ -13,10 +13,10 @@ workflow adaptive_sampling_wf {
            // fastq_gz.flatten()
              //               .view()
             separated_fastqs = create_decision_fastqs(fastq_gz, get_decision(read_until))
-            
-            seqkit(separated_fastqs.map { it -> it[1] }
-                            .flatten()
-                            .map { it -> [ it.simpleName, it ] })
+            separated_fastqs.view()
+            //seqkit(separated_fastqs.map { it -> it[1] }
+            //                .flatten()
+            //                .map { it -> [ it.simpleName, it ] })
             decision_plotting(decision_plotting_prepare(read_until))
 
     emit: separated_fastqs
