@@ -108,6 +108,11 @@ if ( (params.cores.toInteger() > params.max_cores.toInteger()) && workflow.profi
         .fromPath( params.seq_summary, checkIfExists: true)
         .map { file -> tuple(file.simpleName, file) }
     }
+// pavian_metrics input
+    if (params.pavian_metrics) { pavian_metrics_input_channel = Channel
+        .fromPath( params.pavian_metrics, checkIfExists: true)
+        .map { file -> tuple(file.simpleName, file) }
+    }
 
     // extended input
     // if (params.samples && params.extended) { 
@@ -163,9 +168,12 @@ workflow {
             
             // adaptive sampling analysis
             if ( params.read_until ) { adaptive_sampling_wf(fastq_input_ch, read_until_input_ch) }
-            if ( params.fastq && params.read_qc) { read_qc_wf(fastq_input_ch) }
+            //if ( params.fastq && params.read_qc) { read_qc_wf(fastq_input_ch) }
+            
+            // Metrics
             if ( params.seq_summary ) {sequencing_summary_wf(sequencing_summary_input_channel)}
-            if ( params.stats ) { stats_wf(fastq_input_ch) }
+            if ( params.stats || params.pavian_metrics ) { stats_wf(fastq_input_ch, pavian_metrics_input_channel) }
+            // if (params.pavian_metrics ) { stats_wf(pavian_metrics_input_channel) }
             // read_classification_wf(fastq_input_ch)
            }   // fasta_input_ch = artic_ncov_wf(fastq_input_ch)[0]
         
@@ -183,6 +191,10 @@ def helpMSG() {
     log.info """
     ____________________________________________________________________________________________
     
+
+
+
+
 nextflow run sample_me.nf --samples test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv --fastq_pass test_data/sequencing_output/fastq_pass/ --demultiplex -profile local,docker -work-dir work/ --cores 10 --output results/demultiplex_test
         
     
