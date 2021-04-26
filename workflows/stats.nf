@@ -3,16 +3,21 @@ include { pavian_metrics } from './process/pavian_metrics.nf'
 include { pre_heatmap_reads } from './process/pre_heatmap_reads.nf'
 include { heatmap_reads } from './process/heatmap_reads.nf'
 include { boxplot } from './process/boxplot.nf'
-include { nanoplot } from './process/nanoplot'
+include { nanoplot } from './process/nanoplot.nf'
+include { sequencing_stats } from './process/sequencing_stats.nf'
 
 workflow stats_wf {
     take: 
         fastq
         pavian_reports
     main:
-        
-        nanoplot(fastq)//.flatten().map { it -> [ it.simpleName, it[2] ] }
-        nanoplot.out.view()
+        // Nanoplot for statistic values
+        nanoplot(fastq)
+        // map only name of file and read_quality.txt. tuple(it[0], it[1])
+        read_quality_nanoplot = nanoplot.out.statistics.map { it -> it[1] }.collect()
+        // sequencing stats
+        sequencing_stats(read_quality_nanoplot)
+
         // map fastqs to path only
         fastqcollect = fastq.map { it -> it[1] }.collect()
         readcount(fastqcollect)
@@ -27,6 +32,8 @@ workflow stats_wf {
         
         // boxplot 
         boxplot(readcount.out)
+
+        
 
 
 

@@ -233,11 +233,18 @@ nextflow run sample_me.nf --demultiplex \
 
 
 nextflow run sample_me.nf --demultiplex \
---sample test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv \
+--samples test_data/sequencing_output/115_VT0_deep_seq_ad-sam_barcode_overview.csv \
 --fastq_pass test_data/sequencing_output/fastq_pass/ \
 --read_until test_data/sequencing_output/read_until_FAP76673_e0481cad.csv \
 -profile local,docker -work-dir work/ --cores 20 \
 --output results/test_naming 
     
+
+nextflow run sample_me.nf --demultiplex \
+--samples /mnt/nano-server/GRIDION_DISK/stat_deep_batch2/stat_deep_batch2/20210421_1241_X2_FAP84463_073c5e37/stat_deep_batch2.csv \
+--fastq_pass /mnt/nano-server/GRIDION_DISK/stat_deep_batch2/stat_deep_batch2/20210421_1241_X2_FAP84463_073c5e37/fastq_pass/ \
+-profile local,docker -work-dir work/ --cores 20 \
+--output results/batch2_deep
+
     """.stripIndent()
 }
